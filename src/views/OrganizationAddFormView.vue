@@ -3,8 +3,11 @@ import type { IFormModel } from '@/types/types.ts';
 
 import { ref } from 'vue';
 
+import { validateRules } from '@/composables/validateRules.ts';
 import { useApi } from '../../api/useApi.ts';
 import router from '@/router';
+
+const { ruleRequired, ruleMaxLength25, ruleMaxLength50, ruleMaxLength100 } = validateRules;
 
 // Флаг валидности формы
 const isValidForm = ref(null);
@@ -19,38 +22,6 @@ const formModel = ref<IFormModel>({
     description: '',
     isActive: true,
 });
-
-// Правило для обязательных полей
-const ruleRequired = (value: string) => {
-    return !!value || 'Обязательное поле';
-};
-
-// Правило для максимальной длины
-const ruleMaxLength100 = (value: string) => {
-    if (!value) return true;
-
-    return value.length <= 100 || 'Максимум 100 символов';
-};
-
-// Правило для максимальной длины
-const ruleMaxLength50 = (value: string) => {
-    if (!value) return true;
-
-    return value.length <= 50 || 'Максимум 50 символов';
-};
-
-// Правило для максимальной длины
-const ruleMaxLength25 = (value: string) => {
-    if (!value) return true;
-
-    return value.length <= 25 || 'Максимум 25 символов';
-};
-
-// Функция-обработчик возвращает пользователя на главную страницу
-const onClickBack = async () => {
-    // Переход на начальную страницу
-    await router.push('/');
-};
 
 // Функция-обработчик события отправки формы
 const onFormSubmit = async () => {
@@ -97,7 +68,9 @@ const onFormSubmit = async () => {
 
                 <div class="organization-add-form__controls">
                     <v-btn color="success" type="submit" :loading="isLoading">Отправить</v-btn>
-                    <v-btn color="blue" @click="onClickBack">Назад</v-btn>
+                    <RouterLink to="/">
+                        <v-btn color="blue"> Назад </v-btn>
+                    </RouterLink>
                 </div>
             </v-form>
         </div>
@@ -106,14 +79,24 @@ const onFormSubmit = async () => {
 
 <style scoped lang="scss">
 .organization-add-form {
+    container-type: inline-size;
+
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 50px 30px;
+    padding: 50px 0;
+
+    &__title {
+        text-align: center;
+    }
 
     &__wrapper {
-        padding: 30px 0 0;
-        width: 1200px;
+        padding: 50px 30px;
+        width: 100%;
+
+        @container (width > 800px) {
+            width: 800px;
+        }
     }
 
     &__form {

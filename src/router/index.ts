@@ -17,6 +17,10 @@ const router = createRouter({
             // which is lazy-loaded when the route is visited.
             component: () => import('../views/OrganizationAddFormView.vue'),
         },
+        {
+            path: '/organization/:id',
+            component: () => import('../views/OrganizationPage.vue'),
+        },
     ],
 });
 

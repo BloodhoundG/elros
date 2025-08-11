@@ -62,9 +62,30 @@ const loadItems = (options: IDataTableServerOptions) => {
         .finally(() => (isTableDataLoading.value = false));
 };
 
+// Флаг открытия диалогового окна
+const isDialogOpen = ref(false);
+
+// Переменная хранит ID выбранной для удаления организации
+const selectedOrganizationId = ref<number | null>(null);
+
+// Функция-обработчик клика на кнопку удаления организации
+const onClickDeleteOrganizationButton = (organizationId: number) => {
+    // открытие диалогового окна
+    isDialogOpen.value = true;
+
+    // Сохранение переданного ID
+    selectedOrganizationId.value = organizationId;
+};
+
 // Функция-обработчик удаления организации по ID
-const onClickDeleteOrganization = (organizationId: number) => {
-    useApi.deleteOrganization(organizationId);
+const onClickDeleteOrganization = async (organizationId: number | null) => {
+    if (!organizationId) return;
+
+    // Запрос на удаление организации
+    await useApi.deleteOrganization(organizationId);
+
+    // Закрытие диалогового окна
+    isDialogOpen.value = false;
 };
 </script>
 
@@ -95,7 +116,11 @@ const onClickDeleteOrganization = (organizationId: number) => {
             <template #item="{ item }">
                 <tr>
                     <td>{{ item.id }}</td>
-                    <td>{{ item.name }}</td>
+                    <td>
+                        <RouterLink class="link" :to="`/organization/${item.id}`">
+                            {{ item.name }}
+                        </RouterLink>
+                    </td>
                     <td>
                         <span
                             class="organizations-list__is-active"
@@ -109,11 +134,28 @@ const onClickDeleteOrganization = (organizationId: number) => {
                         </span>
                     </td>
                     <td class="organizations-list__delete-button">
-                        <IconDelete width="24" height="24" @click="onClickDeleteOrganization(item.id)" />
+                        <IconDelete width="24" height="24" @click="onClickDeleteOrganizationButton(item.id)" />
                     </td>
                 </tr>
             </template>
         </v-data-table-server>
+
+        <v-dialog max-width="600" v-model="isDialogOpen" persistent>
+            <v-card
+                title="Вы уверены что хотите удалить запись?"
+                text="Подумайте, действительно ли вы хотите удалить запись, данное дейтсиве нельзя будет отменить."
+            >
+                <template v-slot:actions>
+                    <v-spacer></v-spacer>
+
+                    <v-btn variant="outlined" color="error" @click="onClickDeleteOrganization(selectedOrganizationId)">
+                        Удалить
+                    </v-btn>
+
+                    <v-btn variant="outlined" color="blue" @click="isDialogOpen = false"> Отменить </v-btn>
+                </template>
+            </v-card>
+        </v-dialog>
     </main>
 </template>
 
@@ -184,5 +226,9 @@ const onClickDeleteOrganization = (organizationId: number) => {
 .v-data-table {
     max-width: 1200px;
     margin: 0 auto;
+
+    .link {
+        color: inherit;
+    }
 }
 </style>
